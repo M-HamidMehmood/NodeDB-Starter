@@ -17,6 +17,7 @@ combined.log
 deployment-files
 coverage*
 build/
+dist/
 .vscode/
 tests.xml
 .clinic
