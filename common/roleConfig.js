@@ -32,4 +32,4 @@ module.exports = {
     admin: ['manage_users'],
     user: ['view_content'],
   },
-}
+};
