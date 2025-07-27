@@ -1,19 +1,20 @@
-require('dotenv').config()
-const { Kafka } = require('kafkajs')
+import 'dotenv/config';
+import { Kafka } from 'kafkajs';
 
 const kafka = new Kafka({
   clientId: 'node-app',
   brokers: process.env.KAFKA_BROKERS.split(','),
-})
+});
 
-const producer = kafka.producer()
+const producer = kafka.producer();
 
-;(async () => {
+(async () => {
   try {
-    await producer.connect()
+    await producer.connect();
   } catch (error) {
-    console.error('Kafka Producer Connection Error:', error)
+    // eslint-disable-next-line no-console
+    console.error('Kafka Producer Connection Error:', error);
   }
-})()
+})();
 
-module.exports = { kafka, producer }
+export { kafka, producer };
