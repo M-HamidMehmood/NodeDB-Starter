@@ -5,7 +5,7 @@ const custom_api_1 = require("./custom-api");
 class BadRequestError extends custom_api_1.CustomAPIError {
     constructor(message) {
         super(message, 400);
-        this.name = "BadRequestError";
+        this.name = 'BadRequestError';
     }
 }
 exports.BadRequestError = BadRequestError;
