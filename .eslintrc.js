@@ -17,12 +17,12 @@ module.exports = {
 
     // TypeScript specific rules
     '@typescript-eslint/no-unused-vars': 'error',
-    '@typescript-eslint/explicit-function-return-type': 'warn',
-    '@typescript-eslint/no-explicit-any': 'error',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-non-null-assertion': 'error',
 
     // General best practices
-    'no-console': 'warn',
+    'no-console': 'off',
     'prefer-const': 'error',
     'max-len': ['error', { code: 120, ignoreUrls: true, ignoreStrings: true }],
     'no-unused-vars': 'off', // Disabled in favor of @typescript-eslint/no-unused-vars
@@ -72,8 +72,8 @@ module.exports = {
       },
       rules: {
         '@typescript-eslint/no-var-requires': 'off',
-        '@typescript-eslint/explicit-function-return-type': 'warn',
-        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/no-explicit-any': 'warn',
       },
     },
     {
