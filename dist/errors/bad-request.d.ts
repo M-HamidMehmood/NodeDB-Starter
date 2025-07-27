@@ -1,4 +1,4 @@
-import { CustomAPIError } from "./custom-api";
+import { CustomAPIError } from './custom-api';
 export declare class BadRequestError extends CustomAPIError {
     constructor(message: string);
 }
