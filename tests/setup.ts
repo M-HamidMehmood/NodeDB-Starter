@@ -20,7 +20,7 @@ expect.extend({
       pass,
     };
   },
-  
+
   toBeValidEmail(received: string) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const pass = emailRegex.test(received);

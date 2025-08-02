@@ -84,12 +84,10 @@ describe('Auth API', () => {
     });
 
     test('should fail with missing required fields', async () => {
-      const response = await apiHelper.request()
-        .post('/api/v1/auth/register')
-        .send({
-          name: 'John Doe',
-          // missing email, password, confirmPassword
-        });
+      const response = await apiHelper.request().post('/api/v1/auth/register').send({
+        name: 'John Doe',
+        // missing email, password, confirmPassword
+      });
 
       assertHelper.expectValidationError(response);
     });
@@ -102,12 +100,10 @@ describe('Auth API', () => {
         verificationToken: 'valid-token',
       });
 
-      const response = await apiHelper.request()
-        .post('/api/v1/auth/verify-email')
-        .send({
-          email: user.email,
-          verificationToken: 'valid-token',
-        });
+      const response = await apiHelper.request().post('/api/v1/auth/verify-email').send({
+        email: user.email,
+        verificationToken: 'valid-token',
+      });
 
       assertHelper.expectSuccessResponse(response);
       expect(response.body.message).toContain('verified successfully');
@@ -124,23 +120,19 @@ describe('Auth API', () => {
         verificationToken: 'valid-token',
       });
 
-      const response = await apiHelper.request()
-        .post('/api/v1/auth/verify-email')
-        .send({
-          email: user.email,
-          verificationToken: 'invalid-token',
-        });
+      const response = await apiHelper.request().post('/api/v1/auth/verify-email').send({
+        email: user.email,
+        verificationToken: 'invalid-token',
+      });
 
       assertHelper.expectErrorResponse(response, 400, 'Invalid verification token');
     });
 
     test('should fail with non-existent email', async () => {
-      const response = await apiHelper.request()
-        .post('/api/v1/auth/verify-email')
-        .send({
-          email: 'nonexistent@example.com',
-          verificationToken: 'some-token',
-        });
+      const response = await apiHelper.request().post('/api/v1/auth/verify-email').send({
+        email: 'nonexistent@example.com',
+        verificationToken: 'some-token',
+      });
 
       assertHelper.expectErrorResponse(response, 404, 'User not found');
     });
@@ -151,12 +143,10 @@ describe('Auth API', () => {
         verificationToken: null,
       });
 
-      const response = await apiHelper.request()
-        .post('/api/v1/auth/verify-email')
-        .send({
-          email: user.email,
-          verificationToken: 'some-token',
-        });
+      const response = await apiHelper.request().post('/api/v1/auth/verify-email').send({
+        email: user.email,
+        verificationToken: 'some-token',
+      });
 
       assertHelper.expectErrorResponse(response, 400, 'already verified');
     });
@@ -177,9 +167,7 @@ describe('Auth API', () => {
       expect(response.body.message).toContain('Login successful');
 
       // Check if token cookie is set
-      const tokenCookie = response.headers['set-cookie']?.find((cookie: string) => 
-        cookie.startsWith('token=')
-      );
+      const tokenCookie = response.headers['set-cookie']?.find((cookie: string) => cookie.startsWith('token='));
       expect(tokenCookie).toBeDefined();
       expect(tokenCookie).toContain('HttpOnly');
     });
@@ -216,20 +204,16 @@ describe('Auth API', () => {
     });
 
     test('should fail with invalid email format', async () => {
-      const response = await apiHelper.request()
-        .post('/api/v1/auth/login')
-        .send({
-          email: 'invalid-email',
-          password: 'password',
-        });
+      const response = await apiHelper.request().post('/api/v1/auth/login').send({
+        email: 'invalid-email',
+        password: 'password',
+      });
 
       assertHelper.expectValidationError(response, 'email');
     });
 
     test('should fail with missing credentials', async () => {
-      const response = await apiHelper.request()
-        .post('/api/v1/auth/login')
-        .send({});
+      const response = await apiHelper.request().post('/api/v1/auth/login').send({});
 
       assertHelper.expectValidationError(response);
     });
@@ -239,23 +223,19 @@ describe('Auth API', () => {
     test('should logout successfully', async () => {
       const userWithToken = await testFactory.createAuthenticatedUser();
 
-      const response = await apiHelper.authenticatedRequest(userWithToken.token)
-        .post('/api/v1/auth/logout');
+      const response = await apiHelper.authenticatedRequest(userWithToken.token).post('/api/v1/auth/logout');
 
       assertHelper.expectSuccessResponse(response);
       expect(response.body.message).toContain('Logged out successfully');
 
       // Check if token cookie is cleared
-      const tokenCookie = response.headers['set-cookie']?.find((cookie: string) => 
-        cookie.startsWith('token=')
-      );
+      const tokenCookie = response.headers['set-cookie']?.find((cookie: string) => cookie.startsWith('token='));
       expect(tokenCookie).toContain('token=;');
     });
 
     test('should logout successfully even without authentication', async () => {
       // Logout should work even if user is not authenticated
-      const response = await apiHelper.request()
-        .post('/api/v1/auth/logout');
+      const response = await apiHelper.request().post('/api/v1/auth/logout');
 
       assertHelper.expectSuccessResponse(response);
     });
@@ -268,11 +248,9 @@ describe('Auth API', () => {
         isVerified: true,
       });
 
-      const response = await apiHelper.request()
-        .post('/api/v1/auth/forgot-password')
-        .send({
-          email: user.email,
-        });
+      const response = await apiHelper.request().post('/api/v1/auth/forgot-password').send({
+        email: user.email,
+      });
 
       assertHelper.expectSuccessResponse(response);
       expect(response.body.message).toContain('password reset instructions');
@@ -284,11 +262,9 @@ describe('Auth API', () => {
     });
 
     test('should return success even for non-existent email (security)', async () => {
-      const response = await apiHelper.request()
-        .post('/api/v1/auth/forgot-password')
-        .send({
-          email: 'nonexistent@example.com',
-        });
+      const response = await apiHelper.request().post('/api/v1/auth/forgot-password').send({
+        email: 'nonexistent@example.com',
+      });
 
       // Should return success to prevent email enumeration
       assertHelper.expectSuccessResponse(response);
@@ -296,11 +272,9 @@ describe('Auth API', () => {
     });
 
     test('should fail with invalid email format', async () => {
-      const response = await apiHelper.request()
-        .post('/api/v1/auth/forgot-password')
-        .send({
-          email: 'invalid-email',
-        });
+      const response = await apiHelper.request().post('/api/v1/auth/forgot-password').send({
+        email: 'invalid-email',
+      });
 
       assertHelper.expectValidationError(response, 'email');
     });
@@ -316,14 +290,12 @@ describe('Auth API', () => {
       });
 
       const newPassword = 'NewPassword123!';
-      const response = await apiHelper.request()
-        .post('/api/v1/auth/reset-password')
-        .send({
-          email: user.email,
-          token: resetToken,
-          password: newPassword,
-          confirmPassword: newPassword,
-        });
+      const response = await apiHelper.request().post('/api/v1/auth/reset-password').send({
+        email: user.email,
+        token: resetToken,
+        password: newPassword,
+        confirmPassword: newPassword,
+      });
 
       assertHelper.expectSuccessResponse(response);
       expect(response.body.message).toContain('Password reset successful');
@@ -345,14 +317,12 @@ describe('Auth API', () => {
         isVerified: true,
       });
 
-      const response = await apiHelper.request()
-        .post('/api/v1/auth/reset-password')
-        .send({
-          email: user.email,
-          token: 'invalid-token',
-          password: 'NewPassword123!',
-          confirmPassword: 'NewPassword123!',
-        });
+      const response = await apiHelper.request().post('/api/v1/auth/reset-password').send({
+        email: user.email,
+        token: 'invalid-token',
+        password: 'NewPassword123!',
+        confirmPassword: 'NewPassword123!',
+      });
 
       assertHelper.expectErrorResponse(response, 400, 'Invalid or expired reset token');
     });
@@ -365,14 +335,12 @@ describe('Auth API', () => {
         isVerified: true,
       });
 
-      const response = await apiHelper.request()
-        .post('/api/v1/auth/reset-password')
-        .send({
-          email: user.email,
-          token: resetToken,
-          password: 'NewPassword123!',
-          confirmPassword: 'NewPassword123!',
-        });
+      const response = await apiHelper.request().post('/api/v1/auth/reset-password').send({
+        email: user.email,
+        token: resetToken,
+        password: 'NewPassword123!',
+        confirmPassword: 'NewPassword123!',
+      });
 
       assertHelper.expectErrorResponse(response, 400, 'Invalid or expired reset token');
     });
@@ -385,14 +353,12 @@ describe('Auth API', () => {
         isVerified: true,
       });
 
-      const response = await apiHelper.request()
-        .post('/api/v1/auth/reset-password')
-        .send({
-          email: user.email,
-          token: resetToken,
-          password: 'NewPassword123!',
-          confirmPassword: 'DifferentPassword123!',
-        });
+      const response = await apiHelper.request().post('/api/v1/auth/reset-password').send({
+        email: user.email,
+        token: resetToken,
+        password: 'NewPassword123!',
+        confirmPassword: 'DifferentPassword123!',
+      });
 
       assertHelper.expectValidationError(response);
     });
@@ -405,14 +371,12 @@ describe('Auth API', () => {
         isVerified: true,
       });
 
-      const response = await apiHelper.request()
-        .post('/api/v1/auth/reset-password')
-        .send({
-          email: user.email,
-          token: resetToken,
-          password: '123',
-          confirmPassword: '123',
-        });
+      const response = await apiHelper.request().post('/api/v1/auth/reset-password').send({
+        email: user.email,
+        token: resetToken,
+        password: '123',
+        confirmPassword: '123',
+      });
 
       assertHelper.expectValidationError(response, 'password');
     });

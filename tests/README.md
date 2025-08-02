@@ -9,22 +9,26 @@ This comprehensive test suite provides thorough coverage for the Node.js API aut
 ### 🎯 Test Categories
 
 #### 1. **Unit Tests** (`tests/unit/`)
+
 - **Auth Schema Validation** (16 tests) - Validates Zod schemas for authentication endpoints
 - **User Schema Validation** (20 tests) - Validates Zod schemas for user management endpoints
 - **Utility Functions** (9 tests) - Tests JWT, validation, and helper functions
 - **Validation Logic** (10 tests) - Core validation rules and patterns
 
 #### 2. **Integration Tests** (`tests/auth/` & `tests/user/`)
+
 - **Auth API Tests** (30+ tests) - Full authentication flow testing
 - **User API Tests** (30+ tests) - Complete user management testing
 - **Database Integration** - Real database operations with cleanup
 
 #### 3. **Basic App Tests** (`tests/basic/`)
+
 - Express app initialization and middleware tests
 
 ## 🔧 Test Configuration
 
 ### Test Scripts
+
 ```bash
 # Run all unit tests (no database required)
 npm test
@@ -42,6 +46,7 @@ npm run test:watch
 ```
 
 ### Test Environment
+
 - **Framework**: Jest with TypeScript support
 - **Database**: PostgreSQL with isolated test databases
 - **Coverage**: Text, LCOV, and HTML reports
@@ -52,6 +57,7 @@ npm run test:watch
 ### For Integration Tests (Requires Docker)
 
 1. **Start PostgreSQL with Docker:**
+
    ```bash
    docker compose up -d postgres
    ```
@@ -62,13 +68,16 @@ npm run test:watch
    ```
 
 The test suite automatically:
+
 - Creates unique test databases for each run
 - Runs migrations on test databases
 - Seeds test data (roles, permissions, users)
 - Cleans up after tests complete
 
 ### Environment Configuration
+
 Test environment variables are defined in `.env.test`:
+
 - Database credentials matching `docker-compose.yml`
 - JWT secrets for testing
 - Reduced rate limits for testing
@@ -76,6 +85,7 @@ Test environment variables are defined in `.env.test`:
 ## 📋 Test Coverage Details
 
 ### **Authentication Endpoints Tested:**
+
 - `POST /api/v1/auth/register` ✅
 - `POST /api/v1/auth/verify-email` ✅
 - `POST /api/v1/auth/login` ✅
@@ -84,6 +94,7 @@ Test environment variables are defined in `.env.test`:
 - `POST /api/v1/auth/reset-password` ✅
 
 ### **User Management Endpoints Tested:**
+
 - `GET /api/v1/user/` ✅ (with pagination & search)
 - `GET /api/v1/user/me` ✅
 - `GET /api/v1/user/:id` ✅
@@ -93,6 +104,7 @@ Test environment variables are defined in `.env.test`:
 ### **Test Scenarios Covered:**
 
 #### ✅ **Authentication & Security**
+
 - Valid registration with email verification
 - Login with JWT token generation
 - Password reset flow with email tokens
@@ -101,6 +113,7 @@ Test environment variables are defined in `.env.test`:
 - Authorization and permission checks
 
 #### ✅ **Data Validation**
+
 - Email format validation
 - Password strength requirements
 - Required field validation
@@ -108,6 +121,7 @@ Test environment variables are defined in `.env.test`:
 - Pagination parameter validation
 
 #### ✅ **Error Handling**
+
 - Invalid credentials handling
 - Missing authentication
 - Insufficient permissions
@@ -115,6 +129,7 @@ Test environment variables are defined in `.env.test`:
 - Database constraint violations
 
 #### ✅ **Business Logic**
+
 - Role-based access control (RBAC)
 - User profile management
 - Password updates with verification
@@ -122,6 +137,7 @@ Test environment variables are defined in `.env.test`:
 - Token expiration handling
 
 #### ✅ **API Response Format**
+
 - Success response structure
 - Error response consistency
 - Proper HTTP status codes
@@ -130,6 +146,7 @@ Test environment variables are defined in `.env.test`:
 ## 🛠️ Test Utilities
 
 ### **Test Data Factory** (`tests/helpers/testHelpers.ts`)
+
 ```typescript
 // Create test users with roles and permissions
 const adminUser = await testFactory.createUserWithRole('admin', ['manage_users']);
@@ -137,16 +154,17 @@ const authenticatedUser = await testFactory.createAuthenticatedUser(['view_profi
 ```
 
 ### **API Test Helpers**
+
 ```typescript
 // Authenticated requests
-const response = await apiHelper.authenticatedRequest(token)
-  .get('/api/v1/user/me');
+const response = await apiHelper.authenticatedRequest(token).get('/api/v1/user/me');
 
 // Login helper
 const loginResponse = await apiHelper.loginUser(email, password);
 ```
 
 ### **Database Helpers**
+
 ```typescript
 // Query helpers
 const user = await dbHelper.getUserByEmail('test@example.com');
@@ -154,6 +172,7 @@ const permissions = await dbHelper.getUserPermissions(userId);
 ```
 
 ### **Assertion Helpers**
+
 ```typescript
 // Response assertions
 assertHelper.expectSuccessResponse(response, 201);
@@ -164,6 +183,7 @@ assertHelper.expectAuthenticationError(response);
 ## 🚀 Running Tests in Different Environments
 
 ### **Local Development**
+
 ```bash
 # Quick unit tests (no database)
 npm test
@@ -174,13 +194,16 @@ npm run test:integration
 ```
 
 ### **CI/CD Pipeline**
+
 The test configuration supports:
+
 - Automated database creation/cleanup
 - Coverage reporting
 - Parallel test execution
 - Environment isolation
 
 ### **Docker Environment**
+
 ```bash
 # Start services
 docker compose up -d
@@ -192,12 +215,14 @@ docker compose exec app npm test
 ## 📈 Coverage Thresholds
 
 Current coverage requirements:
+
 - **Functions**: 80%
 - **Lines**: 80%
 - **Branches**: 70%
 - **Statements**: 80%
 
 Coverage reports generated in:
+
 - `coverage/lcov-report/index.html` (HTML report)
 - `coverage/lcov.info` (LCOV format)
 
@@ -233,21 +258,24 @@ tests/
 ### **Common Issues:**
 
 1. **Database Connection Failed**
+
    ```bash
    # Start PostgreSQL
    docker compose up -d postgres
-   
+
    # Check connection
    docker compose logs postgres
    ```
 
 2. **bcrypt Binary Issues** (WSL/Windows)
+
    ```bash
    # Rebuild bcrypt for current platform
    npm rebuild bcrypt
    ```
 
 3. **Port Conflicts**
+
    ```bash
    # Check if port 5432 is in use
    netstat -ano | findstr :5432
@@ -260,7 +288,9 @@ tests/
    ```
 
 ### **Environment Variables**
+
 Ensure these are set in `.env.test`:
+
 - `DATABASE_URL`
 - `JWT_SECRET`
 - `NODE_ENV=test`
@@ -268,6 +298,7 @@ Ensure these are set in `.env.test`:
 ## 📝 Adding New Tests
 
 ### **Unit Tests**
+
 ```typescript
 // tests/unit/new-feature.test.ts
 import { describe, test, expect } from '@jest/globals';
@@ -281,6 +312,7 @@ describe('New Feature', () => {
 ```
 
 ### **Integration Tests**
+
 ```typescript
 // tests/feature/feature.test.ts
 import { testFactory, apiHelper, assertHelper } from '../helpers/testHelpers';
@@ -288,11 +320,9 @@ import { testFactory, apiHelper, assertHelper } from '../helpers/testHelpers';
 describe('Feature API', () => {
   test('should handle feature endpoint', async () => {
     const user = await testFactory.createAuthenticatedUser();
-    
-    const response = await apiHelper.authenticatedRequest(user.token)
-      .post('/api/v1/feature')
-      .send({ data: 'test' });
-    
+
+    const response = await apiHelper.authenticatedRequest(user.token).post('/api/v1/feature').send({ data: 'test' });
+
     assertHelper.expectSuccessResponse(response, 201);
   });
 });
