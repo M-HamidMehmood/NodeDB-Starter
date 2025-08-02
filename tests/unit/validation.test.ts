@@ -18,13 +18,7 @@ describe('Validation Tests', () => {
     });
 
     test('should reject invalid email formats', () => {
-      const invalidEmails = [
-        'invalid-email',
-        '@domain.com',
-        'user@',
-        'user@domain',
-        '',
-      ];
+      const invalidEmails = ['invalid-email', '@domain.com', 'user@', 'user@domain', ''];
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -36,12 +30,7 @@ describe('Validation Tests', () => {
 
   describe('Password Strength Validation', () => {
     test('should validate strong passwords', () => {
-      const strongPasswords = [
-        'Password123!',
-        'SecurePass1@',
-        'MyPassword2#',
-        'ValidPass3$',
-      ];
+      const strongPasswords = ['Password123!', 'SecurePass1@', 'MyPassword2#', 'ValidPass3$'];
 
       // Minimum 8 chars, at least one uppercase, lowercase, number, special char
       const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
@@ -52,15 +41,7 @@ describe('Validation Tests', () => {
     });
 
     test('should reject weak passwords', () => {
-      const weakPasswords = [
-        '123',
-        'password',
-        'PASSWORD',
-        'Password',
-        'password123',
-        'PASSWORD123',
-        'Pass1!',
-      ];
+      const weakPasswords = ['123', 'password', 'PASSWORD', 'Password', 'password123', 'PASSWORD123', 'Pass1!'];
 
       const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
 
@@ -108,9 +89,7 @@ describe('Validation Tests', () => {
       const errorResponse = {
         success: false,
         message: 'Operation failed',
-        errors: [
-          { field: 'email', message: 'Invalid email format' },
-        ],
+        errors: [{ field: 'email', message: 'Invalid email format' }],
       };
 
       expect(errorResponse).toHaveProperty('success', false);
