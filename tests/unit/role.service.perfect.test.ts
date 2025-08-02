@@ -71,11 +71,7 @@ describe('Role Service - Perfect Test Cases', () => {
       expect(result.id).toBeDefined();
 
       // Verify in database
-      const createdRole = await db
-        .select()
-        .from(schema.roles)
-        .where(eq(schema.roles.name, roleData.name))
-        .limit(1);
+      const createdRole = await db.select().from(schema.roles).where(eq(schema.roles.name, roleData.name)).limit(1);
       expect(createdRole).toHaveLength(1);
       expect(createdRole[0].title).toBe(roleData.title);
     });

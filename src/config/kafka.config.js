@@ -12,7 +12,6 @@ const producer = kafka.producer();
   try {
     await producer.connect();
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Kafka Producer Connection Error:', error);
   }
 })();

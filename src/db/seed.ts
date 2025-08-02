@@ -77,26 +77,21 @@ const userData = [
 
 async function seed(): Promise<void> {
   try {
-    // eslint-disable-next-line no-console
     console.log('🌱 Starting database seeding...');
 
     // Seed roles
-    // eslint-disable-next-line no-console
     console.log('📝 Seeding roles...');
     await db.insert(roles).values(roleData).onConflictDoNothing();
 
     // Seed permissions
-    // eslint-disable-next-line no-console
     console.log('🔐 Seeding permissions...');
     await db.insert(permissions).values(permissionData).onConflictDoNothing();
 
     // Seed role-permission mappings
-    // eslint-disable-next-line no-console
     console.log('🔗 Seeding role-permission mappings...');
     await db.insert(rolePermissions).values(rolePermissionData).onConflictDoNothing();
 
     // Seed users with hashed passwords
-    // eslint-disable-next-line no-console
     console.log('👥 Seeding users...');
     const usersWithPasswords = await Promise.all(
       userData.map(async user => ({
@@ -107,9 +102,7 @@ async function seed(): Promise<void> {
 
     await db.insert(users).values(usersWithPasswords).onConflictDoNothing();
 
-    // eslint-disable-next-line no-console
     console.log('✅ Database seeding completed successfully!');
-    // eslint-disable-next-line no-console
     console.log(`
 📊 Seeded:
   - ${roleData.length} roles
@@ -122,7 +115,6 @@ async function seed(): Promise<void> {
   User: user@mail.com / password
     `);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('❌ Error seeding database:', error);
     process.exit(1);
   }
@@ -132,12 +124,10 @@ async function seed(): Promise<void> {
 if (require.main === module) {
   seed()
     .then(() => {
-      // eslint-disable-next-line no-console
       console.log('🎉 Seeding process completed!');
       process.exit(0);
     })
     .catch(error => {
-      // eslint-disable-next-line no-console
       console.error('💥 Seeding failed:', error);
       process.exit(1);
     });
