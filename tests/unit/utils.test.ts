@@ -57,7 +57,7 @@ describe('Utility Functions', () => {
 
     test('should handle expired tokens', () => {
       const payload = { userId: 1 };
-      
+
       // Create token that expires immediately
       const token = jwt.sign(payload, process.env.JWT_SECRET!, {
         expiresIn: '0s',
@@ -74,22 +74,9 @@ describe('Utility Functions', () => {
 
   describe('Password Utilities', () => {
     test('should validate password requirements', () => {
-      const validPasswords = [
-        'Password123!',
-        'SecurePass1@',
-        'MyPassword2#',
-        'ValidPass3$',
-      ];
+      const validPasswords = ['Password123!', 'SecurePass1@', 'MyPassword2#', 'ValidPass3$'];
 
-      const invalidPasswords = [
-        '123',
-        'password',
-        'PASSWORD',
-        'Password',
-        'password123',
-        'PASSWORD123',
-        'Pass1!',
-      ];
+      const invalidPasswords = ['123', 'password', 'PASSWORD', 'Password', 'password123', 'PASSWORD123', 'Pass1!'];
 
       // Simple password validation regex (minimum 8 chars, at least one uppercase, lowercase, number, special char)
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
@@ -113,13 +100,7 @@ describe('Utility Functions', () => {
         'firstname.lastname@domain.com',
       ];
 
-      const invalidEmails = [
-        'invalid-email',
-        '@domain.com',
-        'user@',
-        'user@domain',
-        '',
-      ];
+      const invalidEmails = ['invalid-email', '@domain.com', 'user@', 'user@domain', ''];
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -151,9 +132,7 @@ describe('Utility Functions', () => {
       const errorResponse = {
         success: false,
         message: 'Operation failed',
-        errors: [
-          { field: 'email', message: 'Invalid email format' },
-        ],
+        errors: [{ field: 'email', message: 'Invalid email format' }],
       };
 
       expect(errorResponse).toHaveProperty('success', false);
