@@ -59,7 +59,7 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['*.ts'],
+      files: ['src/**/*.ts', 'config/**/*.ts', 'common/**/*.ts', 'errors/**/*.ts'],
       extends: [
         'plugin:@typescript-eslint/recommended',
         'plugin:@typescript-eslint/recommended-requiring-type-checking',
@@ -77,6 +77,36 @@ module.exports = {
       },
     },
     {
+      files: ['tests/**/*.ts', '**/*.test.ts', '**/*.spec.ts'],
+      extends: ['plugin:@typescript-eslint/recommended'],
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-unsafe-member-access': 'off',
+        '@typescript-eslint/no-unsafe-assignment': 'off',
+        '@typescript-eslint/no-unsafe-call': 'off',
+        '@typescript-eslint/no-unsafe-argument': 'off',
+        '@typescript-eslint/no-unsafe-return': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/no-non-null-assertion': 'off',
+        '@typescript-eslint/no-require-imports': 'off',
+        'import/no-extraneous-dependencies': 'off',
+        'no-restricted-syntax': 'off',
+        'no-await-in-loop': 'off',
+        'no-plusplus': 'off',
+        'max-classes-per-file': 'off',
+        'prefer-destructuring': 'off',
+        'no-promise-executor-return': 'off',
+        '@typescript-eslint/no-namespace': 'off',
+        radix: 'off',
+      },
+    },
+    {
       files: ['*.js'],
       env: {
         node: true,
@@ -88,6 +118,7 @@ module.exports = {
         '@typescript-eslint/prefer-const': 'off',
         '@typescript-eslint/no-unsafe-member-access': 'off',
         '@typescript-eslint/no-unsafe-assignment': 'off',
+        '@typescript-eslint/no-require-imports': 'off',
         'import/no-extraneous-dependencies': 'off',
       },
     },
