@@ -19,17 +19,19 @@ export const updateUserSchema = z.object({
   email: z.string().email('Invalid email format').optional(),
 });
 
-export const updatePasswordSchema = z.object({
-  oldPassword: z.string().min(6, 'Old password must be at least 6 characters'),
-  newPassword: z
-    .string()
-    .min(6, 'New password must be at least 6 characters')
-    .max(50, 'New password must be less than 50 characters'),
-  confirmNewPassword: z.string().min(6, 'Confirm new password must be at least 6 characters'),
-}).refine((data) => data.newPassword === data.confirmNewPassword, {
-  message: "New passwords don't match",
-  path: ["confirmNewPassword"],
-});
+export const updatePasswordSchema = z
+  .object({
+    oldPassword: z.string().min(6, 'Old password must be at least 6 characters'),
+    newPassword: z
+      .string()
+      .min(6, 'New password must be at least 6 characters')
+      .max(50, 'New password must be less than 50 characters'),
+    confirmNewPassword: z.string().min(6, 'Confirm new password must be at least 6 characters'),
+  })
+  .refine(data => data.newPassword === data.confirmNewPassword, {
+    message: "New passwords don't match",
+    path: ['confirmNewPassword'],
+  });
 
 export const getUsersQuerySchema = z.object({
   page: z
