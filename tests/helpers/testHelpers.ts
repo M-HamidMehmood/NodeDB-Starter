@@ -1,5 +1,6 @@
 import request from 'supertest';
 import bcrypt from 'bcrypt';
+import { eq } from 'drizzle-orm';
 import app from '../../src/app';
 import { db } from '../../src/db/connection';
 import * as schema from '../../src/db/schema';
@@ -20,14 +21,14 @@ export interface TestRole {
   id: number;
   name: string;
   title: string;
-  description?: string;
+  description: string | null;
   accessLevel: string;
 }
 
 export interface TestPermission {
   id: number;
   name: string;
-  description?: string;
+  description: string | null;
 }
 
 // Test data factory
@@ -58,7 +59,7 @@ export class TestDataFactory {
 
   static async createUser(overrides: Partial<TestUser> = {}): Promise<TestUser> {
     // Create default role if no roleId provided
-    let roleId = overrides.roleId;
+    let { roleId } = overrides;
     if (!roleId) {
       const role = await this.createRole({ name: 'user', title: 'User' });
       roleId = role.id;
@@ -77,7 +78,10 @@ export class TestDataFactory {
     return user;
   }
 
-  static async createUserWithRole(roleName: string, permissions: string[] = []): Promise<TestUser & { role: TestRole; permissions: TestPermission[] }> {
+  static async createUserWithRole(
+    roleName: string,
+    permissions: string[] = []
+  ): Promise<TestUser & { role: TestRole; permissions: TestPermission[] }> {
     // Create role
     const role = await this.createRole({ name: roleName, title: roleName });
 
@@ -104,7 +108,7 @@ export class TestDataFactory {
 
   static async createAuthenticatedUser(permissions: string[] = []): Promise<TestUser & { token: string }> {
     const userData = await this.createUserWithRole('authenticated_user', permissions);
-    
+
     const tokenPayload = {
       userId: userData.id,
       email: userData.email,
@@ -120,6 +124,18 @@ export class TestDataFactory {
       token,
     };
   }
+
+  static generateToken(user: TestUser, permissions: string[] = []): string {
+    const tokenPayload = {
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      roleId: user.roleId,
+      permissions,
+    };
+
+    return createJWT(tokenPayload);
+  }
 }
 
 // API test helpers
@@ -133,18 +149,14 @@ export class ApiTestHelpers {
   }
 
   static async loginUser(email: string, password: string) {
-    const response = await request(app)
-      .post('/api/v1/auth/login')
-      .send({ email, password });
-    
+    const response = await request(app).post('/api/v1/auth/login').send({ email, password });
+
     return response;
   }
 
   static async registerUser(userData: { name: string; email: string; password: string; confirmPassword: string }) {
-    const response = await request(app)
-      .post('/api/v1/auth/register')
-      .send(userData);
-    
+    const response = await request(app).post('/api/v1/auth/register').send(userData);
+
     return response;
   }
 
@@ -163,29 +175,17 @@ export class ApiTestHelpers {
 // Database helpers
 export class DatabaseHelpers {
   static async getUserByEmail(email: string) {
-    const [user] = await db
-      .select()
-      .from(schema.users)
-      .where(schema.users.email.eq(email))
-      .limit(1);
+    const [user] = await db.select().from(schema.users).where(schema.users.email.eq(email)).limit(1);
     return user;
   }
 
   static async getUserById(id: number) {
-    const [user] = await db
-      .select()
-      .from(schema.users)
-      .where(schema.users.id.eq(id))
-      .limit(1);
+    const [user] = await db.select().from(schema.users).where(schema.users.id.eq(id)).limit(1);
     return user;
   }
 
   static async getRoleById(id: number) {
-    const [role] = await db
-      .select()
-      .from(schema.roles)
-      .where(schema.roles.id.eq(id))
-      .limit(1);
+    const [role] = await db.select().from(schema.roles).where(schema.roles.id.eq(id)).limit(1);
     return role;
   }
 
@@ -215,7 +215,7 @@ export class AssertionHelpers {
     expect(response.status).toBe(expectedStatus);
     expect(response.body).toHaveProperty('success', false);
     expect(response.body).toHaveProperty('message');
-    
+
     if (expectedMessage) {
       expect(response.body.message).toContain(expectedMessage);
     }
@@ -227,7 +227,7 @@ export class AssertionHelpers {
     expect(response.body).toHaveProperty('message', 'Validation failed');
     expect(response.body).toHaveProperty('errors');
     expect(Array.isArray(response.body.errors)).toBe(true);
-    
+
     if (fieldName) {
       const fieldError = response.body.errors.find((error: any) => error.field === fieldName);
       expect(fieldError).toBeDefined();

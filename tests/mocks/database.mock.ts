@@ -41,15 +41,15 @@ const initializeMockData = () => {
 export const mockDatabase = {
   // Users
   users: {
-    insert: jest.fn().mockImplementation((data) => {
+    insert: jest.fn().mockImplementation(data => {
       const user = { id: userIdCounter++, ...data };
       mockUsers.set(user.id, user);
       return { returning: jest.fn().mockResolvedValue([user]) };
     }),
-    
+
     select: jest.fn().mockImplementation(() => ({
       from: jest.fn().mockReturnThis(),
-      where: jest.fn().mockImplementation((condition) => {
+      where: jest.fn().mockImplementation(condition => {
         const users = Array.from(mockUsers.values());
         // Simple mock implementation - return first match or all
         return Promise.resolve(users);
@@ -59,9 +59,9 @@ export const mockDatabase = {
 
     update: jest.fn().mockImplementation(() => ({
       set: jest.fn().mockReturnThis(),
-      where: jest.fn().mockImplementation((condition) => {
-        return { returning: jest.fn().mockResolvedValue([mockUsers.get(1)]) };
-      }),
+      where: jest
+        .fn()
+        .mockImplementation(condition => ({ returning: jest.fn().mockResolvedValue([mockUsers.get(1)]) })),
     })),
 
     delete: jest.fn().mockImplementation(() => ({
@@ -71,17 +71,15 @@ export const mockDatabase = {
 
   // Roles
   roles: {
-    insert: jest.fn().mockImplementation((data) => {
+    insert: jest.fn().mockImplementation(data => {
       const role = { id: roleIdCounter++, ...data };
       mockRoles.set(role.id, role);
       return { returning: jest.fn().mockResolvedValue([role]) };
     }),
-    
+
     select: jest.fn().mockImplementation(() => ({
       from: jest.fn().mockReturnThis(),
-      where: jest.fn().mockImplementation(() => {
-        return Promise.resolve(Array.from(mockRoles.values()));
-      }),
+      where: jest.fn().mockImplementation(() => Promise.resolve(Array.from(mockRoles.values()))),
     })),
 
     delete: jest.fn().mockResolvedValue(undefined),
@@ -89,18 +87,16 @@ export const mockDatabase = {
 
   // Permissions
   permissions: {
-    insert: jest.fn().mockImplementation((data) => {
+    insert: jest.fn().mockImplementation(data => {
       const permission = { id: permissionIdCounter++, ...data };
       mockPermissions.set(permission.id, permission);
       return { returning: jest.fn().mockResolvedValue([permission]) };
     }),
-    
+
     select: jest.fn().mockImplementation(() => ({
       from: jest.fn().mockReturnThis(),
       innerJoin: jest.fn().mockReturnThis(),
-      where: jest.fn().mockImplementation(() => {
-        return Promise.resolve([{ name: 'manage_users' }, { name: 'view_users' }]);
-      }),
+      where: jest.fn().mockImplementation(() => Promise.resolve([{ name: 'manage_users' }, { name: 'view_users' }])),
     })),
 
     delete: jest.fn().mockResolvedValue(undefined),
@@ -108,12 +104,12 @@ export const mockDatabase = {
 
   // Role Permissions
   rolePermissions: {
-    insert: jest.fn().mockImplementation((data) => {
+    insert: jest.fn().mockImplementation(data => {
       const key = `${data.roleId}-${data.permissionId}`;
       mockRolePermissions.set(key, data);
       return { returning: jest.fn().mockResolvedValue([data]) };
     }),
-    
+
     delete: jest.fn().mockResolvedValue(undefined),
   },
 
@@ -126,14 +122,14 @@ export const mockDatabase = {
 
 // Mock the database module
 export const mockDb = {
-  insert: jest.fn((table) => {
+  insert: jest.fn(table => {
     if (table === mockDatabase.users) return mockDatabase.users.insert;
     if (table === mockDatabase.roles) return mockDatabase.roles.insert;
     if (table === mockDatabase.permissions) return mockDatabase.permissions.insert;
     if (table === mockDatabase.rolePermissions) return mockDatabase.rolePermissions.insert;
     return mockDatabase.insert;
   }),
-  
+
   select: jest.fn(() => mockDatabase.select),
   update: jest.fn(() => mockDatabase.update),
   delete: jest.fn(() => mockDatabase.delete),
