@@ -10,7 +10,14 @@
       "Bash(npm install:*)",
       "Bash(npm run test:basic:*)",
       "Bash(docker-compose up:*)",
-      "Bash(docker compose:*)"
+      "Bash(docker compose:*)",
+      "Bash(npm start)",
+      "Bash(npm run dev:*)",
+      "Bash(npm rebuild:*)",
+      "Bash(rm:*)",
+      "Bash(npm test:*)",
+      "Bash(npx prettier:*)",
+      "Bash(npx eslint:*)"
     ],
     "deny": []
   }

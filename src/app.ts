@@ -7,11 +7,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { env } from '../config/config';
 import errorMiddleware from './middlewares/error.middleware';
-import { logger } from './utils';
-
-// Import routes
-import authRoutes from './modules/auth/auth.routes';
-import userRoutes from './modules/user/user.routes';
+import { logger, RouteLoader } from './utils';
 
 // Swagger UI setup
 // import swaggerUi from 'swagger-ui-express';
@@ -30,9 +26,21 @@ app.use(fileUpload());
 
 // app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiDocument));
 
-// Routes
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/user', userRoutes);
+// Auto-load routes
+const initializeRoutes = async () => {
+  try {
+    const routeLoader = new RouteLoader(app);
+    await routeLoader.loadRoutes();
+  } catch (error) {
+    logger.error('Failed to load routes:', error);
+    process.exit(1);
+  }
+};
+
+initializeRoutes().catch(err => {
+  console.error('Failed to initialize routes:', err);
+  process.exit(1);
+});
 
 // 404 handler
 app.use((_req, res) => {
