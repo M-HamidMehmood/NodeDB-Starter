@@ -5,12 +5,12 @@ import * as schema from '../../src/db/schema';
 export interface SeedData {
   roles: Array<{ id?: number; name: string; title: string; description?: string; accessLevel: string }>;
   permissions: Array<{ id?: number; name: string; description?: string }>;
-  users: Array<{ 
-    id?: number; 
-    name: string; 
-    email: string; 
-    password: string; 
-    roleId?: number; 
+  users: Array<{
+    id?: number;
+    name: string;
+    email: string;
+    password: string;
+    roleId?: number;
     isVerified?: boolean;
     verificationToken?: string;
   }>;
@@ -21,7 +21,13 @@ const defaultSeedData: SeedData = {
   roles: [
     { id: 1, name: 'admin', title: 'Administrator', description: 'Full system access', accessLevel: 'admin' },
     { id: 2, name: 'user', title: 'User', description: 'Basic user access', accessLevel: 'user' },
-    { id: 3, name: 'moderator', title: 'Moderator', description: 'Content moderation access', accessLevel: 'moderator' },
+    {
+      id: 3,
+      name: 'moderator',
+      title: 'Moderator',
+      description: 'Content moderation access',
+      accessLevel: 'moderator',
+    },
   ],
   permissions: [
     { id: 1, name: 'manage_users', description: 'Can manage all users' },
@@ -83,11 +89,14 @@ export async function seedTestDatabase(seedData: SeedData = defaultSeedData) {
     for (const userData of seedData.users) {
       const hashedPassword = await bcrypt.hash(userData.password, 10);
       const { password, ...userDataWithoutPassword } = userData;
-      
-      await db.insert(schema.users).values({
-        ...userDataWithoutPassword,
-        passwordHash: hashedPassword,
-      }).onConflictDoNothing();
+
+      await db
+        .insert(schema.users)
+        .values({
+          ...userDataWithoutPassword,
+          passwordHash: hashedPassword,
+        })
+        .onConflictDoNothing();
     }
 
     // Seed role permissions
@@ -105,13 +114,13 @@ export async function seedTestDatabase(seedData: SeedData = defaultSeedData) {
 export async function clearTestDatabase() {
   try {
     console.log('🧹 Clearing test database...');
-    
+
     // Delete in reverse order to respect foreign key constraints
     await db.delete(schema.rolePermissions);
     await db.delete(schema.users);
     await db.delete(schema.permissions);
     await db.delete(schema.roles);
-    
+
     console.log('✅ Test database cleared successfully');
   } catch (error) {
     console.error('❌ Failed to clear test database:', error);
