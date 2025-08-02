@@ -8,16 +8,13 @@ describe('Basic App Tests', () => {
   });
 
   test('should return 404 for unknown routes', async () => {
-    const response = await request(app)
-      .get('/api/v1/unknown-route')
-      .expect(404);
+    const response = await request(app).get('/api/v1/unknown-route').expect(404);
 
     expect(response.body).toHaveProperty('message', 'Not Found');
   });
 
   test('should have security headers', async () => {
-    const response = await request(app)
-      .get('/api/v1/unknown-route');
+    const response = await request(app).get('/api/v1/unknown-route');
 
     // Check for helmet security headers
     expect(response.headers).toHaveProperty('x-content-type-options');
@@ -25,9 +22,7 @@ describe('Basic App Tests', () => {
   });
 
   test('should handle JSON parsing', async () => {
-    const response = await request(app)
-      .post('/api/v1/auth/register')
-      .send({ test: 'data' });
+    const response = await request(app).post('/api/v1/auth/register').send({ test: 'data' });
 
     // Should not crash on JSON parsing
     expect(response.status).toBeDefined();
@@ -35,9 +30,7 @@ describe('Basic App Tests', () => {
 
   test('should handle auth routes', async () => {
     // Test that auth routes are mounted
-    const response = await request(app)
-      .post('/api/v1/auth/register')
-      .send({});
+    const response = await request(app).post('/api/v1/auth/register').send({});
 
     // Should reach the route (even if validation fails)
     expect(response.status).not.toBe(404);
@@ -45,8 +38,7 @@ describe('Basic App Tests', () => {
 
   test('should handle user routes', async () => {
     // Test that user routes are mounted
-    const response = await request(app)
-      .get('/api/v1/user/me');
+    const response = await request(app).get('/api/v1/user/me');
 
     // Should reach the route (even if auth fails)
     expect(response.status).not.toBe(404);
