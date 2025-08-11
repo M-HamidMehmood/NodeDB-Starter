@@ -17,4 +17,10 @@ module.exports = {
   setupFiles: ['<rootDir>/tests/env.setup.js'],
   // Skip database setup for simple tests
   modulePathIgnorePatterns: ['<rootDir>/tests/globalSetup.ts', '<rootDir>/tests/globalTeardown.ts'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '<rootDir>/tests/unit/role.queries.test.ts',
+    '<rootDir>/tests/unit/role.queries.perfect.test.ts',
+    '<rootDir>/tests/unit/role.service.perfect.test.ts',
+  ],
 };
