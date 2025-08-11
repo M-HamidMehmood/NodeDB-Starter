@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { env } from '../../config/config';
 import { db } from './connection';
 import { permissions, rolePermissions, roles, users } from './schema';
