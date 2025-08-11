@@ -1,6 +1,6 @@
-import { asc, count, desc, eq, ilike, or, and, type SQL } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ilike, or, type SQL } from 'drizzle-orm';
 import { db } from '../connection';
-import { permissions, rolePermissions, roles, users, type NewRole, type Role, type NewRolePermission } from '../schema';
+import { permissions, rolePermissions, roles, users, type NewRole, type NewRolePermission, type Role } from '../schema';
 
 export type RoleWithPermissions = Role & {
   permissions: Array<{
@@ -195,7 +195,7 @@ export const assignPermissionToRole = async (roleId: number, permissionId: numbe
 export const removePermissionFromRole = async (roleId: number, permissionId: number): Promise<boolean> => {
   const result = await db
     .delete(rolePermissions)
-    .where(eq(rolePermissions.roleId, roleId) && eq(rolePermissions.permissionId, permissionId))
+    .where(and(eq(rolePermissions.roleId, roleId), eq(rolePermissions.permissionId, permissionId)))
     .returning();
 
   return result.length > 0;
