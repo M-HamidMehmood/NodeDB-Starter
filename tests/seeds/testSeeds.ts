@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { db } from '../../src/db/connection';
 import * as schema from '../../src/db/schema';
 
@@ -111,7 +111,7 @@ export async function seedTestDatabase(seedData: SeedData = defaultSeedData) {
   }
 }
 
-export async function clearTestDatabase() {
+export async function clearTestDatabase(): Promise<void> {
   try {
     console.log('🧹 Clearing test database...');
 
@@ -127,3 +127,6 @@ export async function clearTestDatabase() {
     throw error;
   }
 }
+
+// Backwards-compatible alias used by some tests
+export const cleanDatabase = clearTestDatabase;

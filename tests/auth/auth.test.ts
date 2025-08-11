@@ -1,7 +1,6 @@
-import { describe, test, expect, beforeEach } from '@jest/globals';
-import bcrypt from 'bcrypt';
-import { testFactory, apiHelper, dbHelper, assertHelper } from '../helpers/testHelpers';
-import { cleanDatabase } from '../setup';
+import { describe, expect, test } from '@jest/globals';
+import bcrypt from 'bcryptjs';
+import { apiHelper, assertHelper, dbHelper, testFactory } from '../helpers/testHelpers';
 
 describe('Auth API', () => {
   describe('POST /api/v1/auth/register', () => {
@@ -167,7 +166,9 @@ describe('Auth API', () => {
       expect(response.body.message).toContain('Login successful');
 
       // Check if token cookie is set
-      const tokenCookie = response.headers['set-cookie']?.find((cookie: string) => cookie.startsWith('token='));
+      const setCookieHeader = response.headers['set-cookie'];
+      const cookies = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader].filter(Boolean);
+      const tokenCookie = cookies.find((cookie: string) => typeof cookie === 'string' && cookie.startsWith('token='));
       expect(tokenCookie).toBeDefined();
       expect(tokenCookie).toContain('HttpOnly');
     });
@@ -229,7 +230,9 @@ describe('Auth API', () => {
       expect(response.body.message).toContain('Logged out successfully');
 
       // Check if token cookie is cleared
-      const tokenCookie = response.headers['set-cookie']?.find((cookie: string) => cookie.startsWith('token='));
+      const setCookieHeader = response.headers['set-cookie'];
+      const cookies = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader].filter(Boolean);
+      const tokenCookie = cookies.find((cookie: string) => typeof cookie === 'string' && cookie.startsWith('token='));
       expect(tokenCookie).toContain('token=;');
     });
 

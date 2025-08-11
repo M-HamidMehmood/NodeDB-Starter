@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals';
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
@@ -17,23 +17,27 @@ describe('RouteLoader', () => {
   let mockModulesPath: string;
   let consoleSpy: jest.SpiedFunction<typeof console.log>;
   let consoleErrorSpy: jest.SpiedFunction<typeof console.error>;
+  let consoleWarnSpy: jest.SpiedFunction<typeof console.warn>;
 
   beforeEach(() => {
+    // Reset all mocks first
+    jest.clearAllMocks();
+    jest.resetModules();
+
     app = express();
     mockModulesPath = '/test/modules';
     routeLoader = new RouteLoader(app, mockModulesPath);
 
     // Spy on console methods
-    consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-
-    // Reset all mocks
-    jest.clearAllMocks();
+    consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
   });
 
   afterEach(() => {
     consoleSpy.mockRestore();
     consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
   });
 
   describe('loadRoutes', () => {

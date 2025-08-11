@@ -1,63 +1,42 @@
-import request from 'supertest';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
+import request, { type Response } from 'supertest';
 import app from '../../src/app';
 import { db } from '../../src/db/connection';
 import * as schema from '../../src/db/schema';
 import { createJWT } from '../../src/utils/jwt';
 
-export interface TestUser {
-  id: number;
-  name: string;
-  email: string;
-  passwordHash: string;
-  roleId: number;
-  isVerified: boolean;
-  verificationToken?: string;
-  token?: string;
-}
+export type TestUser = schema.User & { token?: string };
 
-export interface TestRole {
-  id: number;
-  name: string;
-  title: string;
-  description: string | null;
-  accessLevel: string;
-}
+export type TestRole = schema.Role;
 
-export interface TestPermission {
-  id: number;
-  name: string;
-  description: string | null;
-}
+export type TestPermission = schema.Permission;
 
 // Test data factory
 export class TestDataFactory {
-  static async createRole(overrides: Partial<TestRole> = {}): Promise<TestRole> {
-    const roleData = {
-      name: `test_role_${Date.now()}`,
-      title: 'Test Role',
-      description: 'A test role for testing purposes',
-      accessLevel: 'any',
-      ...overrides,
+  static async createRole(overrides: Partial<schema.NewRole> = {}): Promise<TestRole> {
+    const roleData: schema.NewRole = {
+      name: overrides.name ?? `test_role_${Date.now()}`,
+      title: overrides.title ?? 'Test Role',
+      description: overrides.description ?? 'A test role for testing purposes',
+      accessLevel: overrides.accessLevel ?? 'any',
     };
 
     const [role] = await db.insert(schema.roles).values(roleData).returning();
     return role;
   }
 
-  static async createPermission(overrides: Partial<TestPermission> = {}): Promise<TestPermission> {
-    const permissionData = {
-      name: `test_permission_${Date.now()}`,
-      description: 'A test permission for testing purposes',
-      ...overrides,
+  static async createPermission(overrides: Partial<schema.NewPermission> = {}): Promise<TestPermission> {
+    const permissionData: schema.NewPermission = {
+      name: overrides.name ?? `test_permission_${Date.now()}`,
+      description: overrides.description ?? 'A test permission for testing purposes',
     };
 
     const [permission] = await db.insert(schema.permissions).values(permissionData).returning();
     return permission;
   }
 
-  static async createUser(overrides: Partial<TestUser> = {}): Promise<TestUser> {
+  static async createUser(overrides: Partial<schema.NewUser> = {}): Promise<TestUser> {
     // Create default role if no roleId provided
     let { roleId } = overrides;
     if (!roleId) {
@@ -65,13 +44,18 @@ export class TestDataFactory {
       roleId = role.id;
     }
 
-    const userData = {
-      name: `Test User ${Date.now()}`,
-      email: `test${Date.now()}@example.com`,
-      passwordHash: await bcrypt.hash('password123', 10),
+    const userData: schema.NewUser = {
+      name: overrides.name ?? `Test User ${Date.now()}`,
+      email: overrides.email ?? `test${Date.now()}@example.com`,
+      passwordHash: overrides.passwordHash ?? (await bcrypt.hash('password123', 10)),
       roleId,
-      isVerified: true,
-      ...overrides,
+      isVerified: overrides.isVerified ?? true,
+      verificationToken: overrides.verificationToken,
+      verifiedAt: overrides.verifiedAt,
+      passwordResetToken: overrides.passwordResetToken,
+      passwordResetExpires: overrides.passwordResetExpires,
+      createdAt: overrides.createdAt,
+      updatedAt: overrides.updatedAt,
     };
 
     const [user] = await db.insert(schema.users).values(userData).returning();
@@ -148,23 +132,29 @@ export class ApiTestHelpers {
     return request(app).set('Cookie', [`token=s%3A${token}`]);
   }
 
-  static async loginUser(email: string, password: string) {
+  static async loginUser(email: string, password: string): Promise<Response> {
     const response = await request(app).post('/api/v1/auth/login').send({ email, password });
 
     return response;
   }
 
-  static async registerUser(userData: { name: string; email: string; password: string; confirmPassword: string }) {
+  static async registerUser(userData: {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+  }): Promise<Response> {
     const response = await request(app).post('/api/v1/auth/register').send(userData);
 
     return response;
   }
 
-  static extractTokenFromCookie(response: any): string | null {
-    const setCookieHeader = response.headers['set-cookie'];
+  static extractTokenFromCookie(response: Response): string | null {
+    const setCookieHeader = response.headers['set-cookie'] as unknown;
     if (!setCookieHeader) return null;
 
-    const tokenCookie = setCookieHeader.find((cookie: string) => cookie.startsWith('token='));
+    const cookies = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader].filter(Boolean);
+    const tokenCookie = cookies.find((cookie: string) => typeof cookie === 'string' && cookie.startsWith('token='));
     if (!tokenCookie) return null;
 
     const match = tokenCookie.match(/token=s%3A([^;]+)/);
@@ -175,18 +165,18 @@ export class ApiTestHelpers {
 // Database helpers
 export class DatabaseHelpers {
   static async getUserByEmail(email: string) {
-    const [user] = await db.select().from(schema.users).where(schema.users.email.eq(email)).limit(1);
-    return user;
+    const result = await db.select().from(schema.users).where(eq(schema.users.email, email)).limit(1);
+    return result[0];
   }
 
   static async getUserById(id: number) {
-    const [user] = await db.select().from(schema.users).where(schema.users.id.eq(id)).limit(1);
-    return user;
+    const result = await db.select().from(schema.users).where(eq(schema.users.id, id)).limit(1);
+    return result[0];
   }
 
   static async getRoleById(id: number) {
-    const [role] = await db.select().from(schema.roles).where(schema.roles.id.eq(id)).limit(1);
-    return role;
+    const result = await db.select().from(schema.roles).where(eq(schema.roles.id, id)).limit(1);
+    return result[0];
   }
 
   static async getUserPermissions(userId: number): Promise<string[]> {
@@ -196,8 +186,8 @@ export class DatabaseHelpers {
     const permissions = await db
       .select({ name: schema.permissions.name })
       .from(schema.permissions)
-      .innerJoin(schema.rolePermissions, schema.permissions.id.eq(schema.rolePermissions.permissionId))
-      .where(schema.rolePermissions.roleId.eq(user.roleId));
+      .innerJoin(schema.rolePermissions, eq(schema.permissions.id, schema.rolePermissions.permissionId))
+      .where(eq(schema.rolePermissions.roleId, user.roleId));
 
     return permissions.map(p => p.name);
   }
@@ -205,13 +195,13 @@ export class DatabaseHelpers {
 
 // Assertion helpers
 export class AssertionHelpers {
-  static expectSuccessResponse(response: any, expectedStatus = 200) {
+  static expectSuccessResponse(response: Response, expectedStatus = 200) {
     expect(response.status).toBe(expectedStatus);
     expect(response.body).toHaveProperty('success', true);
     expect(response.body).toHaveProperty('message');
   }
 
-  static expectErrorResponse(response: any, expectedStatus: number, expectedMessage?: string) {
+  static expectErrorResponse(response: Response, expectedStatus: number, expectedMessage?: string) {
     expect(response.status).toBe(expectedStatus);
     expect(response.body).toHaveProperty('success', false);
     expect(response.body).toHaveProperty('message');
@@ -221,7 +211,7 @@ export class AssertionHelpers {
     }
   }
 
-  static expectValidationError(response: any, fieldName?: string) {
+  static expectValidationError(response: Response, fieldName?: string) {
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('success', false);
     expect(response.body).toHaveProperty('message', 'Validation failed');
@@ -229,18 +219,18 @@ export class AssertionHelpers {
     expect(Array.isArray(response.body.errors)).toBe(true);
 
     if (fieldName) {
-      const fieldError = response.body.errors.find((error: any) => error.field === fieldName);
+      const fieldError = response.body.errors.find((error: { field: string }) => error.field === fieldName);
       expect(fieldError).toBeDefined();
     }
   }
 
-  static expectAuthenticationError(response: any) {
+  static expectAuthenticationError(response: Response) {
     expect(response.status).toBe(401);
     expect(response.body).toHaveProperty('success', false);
     expect(response.body.message).toContain('Authentication');
   }
 
-  static expectAuthorizationError(response: any) {
+  static expectAuthorizationError(response: Response) {
     expect(response.status).toBe(403);
     expect(response.body).toHaveProperty('success', false);
     expect(response.body.message).toContain('permission');

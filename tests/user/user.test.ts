@@ -1,7 +1,6 @@
-import { describe, test, expect, beforeEach } from '@jest/globals';
-import bcrypt from 'bcrypt';
-import { testFactory, apiHelper, dbHelper, assertHelper } from '../helpers/testHelpers';
-import { cleanDatabase } from '../setup';
+import { describe, expect, test } from '@jest/globals';
+import bcrypt from 'bcryptjs';
+import { apiHelper, assertHelper, dbHelper, testFactory } from '../helpers/testHelpers';
 
 describe('User API', () => {
   describe('GET /api/v1/user/', () => {
@@ -240,7 +239,9 @@ describe('User API', () => {
       assertHelper.expectSuccessResponse(response);
 
       // Check if new token cookie is set
-      const tokenCookie = response.headers['set-cookie']?.find((cookie: string) => cookie.startsWith('token='));
+      const setCookieHeader = response.headers['set-cookie'] as unknown;
+      const cookies = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader].filter(Boolean);
+      const tokenCookie = cookies.find((cookie: string) => typeof cookie === 'string' && cookie.startsWith('token='));
       expect(tokenCookie).toBeDefined();
     });
 
@@ -441,11 +442,14 @@ describe('User API', () => {
     test('should handle malformed request data gracefully', async () => {
       const user = await testFactory.createAuthenticatedUser();
 
-      const response = await apiHelper.authenticatedRequest(user.token).put(`/api/v1/user/${user.id}`).send({
-        name: null,
-        email: undefined,
-        invalidField: 'should be ignored',
-      });
+      const response = await apiHelper
+        .authenticatedRequest(user.token)
+        .put(`/api/v1/user/${user.id}`)
+        .send({
+          name: null as unknown as string,
+          email: undefined as unknown as string,
+          invalidField: 'should be ignored',
+        });
 
       // Should either succeed with valid data or fail with validation error
       expect([200, 400]).toContain(response.status);

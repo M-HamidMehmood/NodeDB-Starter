@@ -1,10 +1,25 @@
-import { Express } from 'express';
+import { Express, Router } from 'express';
 import fs from 'fs';
 import path from 'path';
 
-interface RouteModule {
-  default: unknown;
+type RouteModule = {
+  default?: unknown;
   basePath?: string;
+  router?: unknown;
+};
+
+function isRouter(candidate: unknown): candidate is Router {
+  if (candidate === null || candidate === undefined) {
+    return false;
+  }
+  if (typeof candidate === 'function') {
+    return true;
+  }
+  if (typeof candidate === 'object' && 'use' in (candidate as Record<string, unknown>)) {
+    const maybe = candidate as { use?: unknown };
+    return typeof maybe.use === 'function';
+  }
+  return false;
 }
 
 /**
@@ -21,17 +36,24 @@ export class RouteLoader {
   }
 
   /**
-   * Load all routes from modules directory
+   * Load all routes from modules directory (async wrapper around sync load)
    */
+  // eslint-disable-next-line @typescript-eslint/require-await
   async loadRoutes(): Promise<void> {
     try {
-      const modules = this.discoverModules();
-
-      await Promise.all(modules.map(moduleInfo => this.registerModule(moduleInfo)));
+      this.loadRoutesSync();
     } catch (error) {
       console.error('Error loading routes:', error);
       throw error;
     }
+  }
+
+  /**
+   * Load all routes from modules directory synchronously
+   */
+  loadRoutesSync(): void {
+    const modules = this.discoverModules();
+    modules.forEach(moduleInfo => this.registerModuleSync(moduleInfo));
   }
 
   /**
@@ -52,35 +74,51 @@ export class RouteLoader {
         const routeFile = path.join(this.modulesPath, moduleName, `${moduleName}.routes.ts`);
         const routeFileJs = path.join(this.modulesPath, moduleName, `${moduleName}.routes.js`);
 
-        // Check for both .ts and .js files
-        if (fs.existsSync(routeFile) || fs.existsSync(routeFileJs)) {
+        const hasTs = fs.existsSync(routeFile);
+        if (hasTs) {
           return {
             name: moduleName,
-            routePath: fs.existsSync(routeFile) ? routeFile : routeFileJs,
+            routePath: routeFile,
           };
         }
+
+        const hasJs = fs.existsSync(routeFileJs);
+        if (hasJs) {
+          return {
+            name: moduleName,
+            routePath: routeFileJs,
+          };
+        }
+
         return null;
       })
       .filter((module): module is { name: string; routePath: string } => module !== null);
   }
 
   /**
-   * Register a single module's routes
+   * Register a single module's routes (sync require)
    */
-  private async registerModule(moduleInfo: { name: string; routePath: string }): Promise<void> {
+  private registerModuleSync(moduleInfo: { name: string; routePath: string }): void {
     try {
-      const routeModule = (await import(moduleInfo.routePath)) as RouteModule;
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, import/no-dynamic-require, global-require
+      const required = require(moduleInfo.routePath) as RouteModule;
 
-      if (!routeModule.default) {
-        console.warn(`No default export found in ${moduleInfo.routePath}`);
+      const basePath = required.basePath || `/api/v1/${moduleInfo.name}`;
+
+      const defaultExport = (required as Record<string, unknown>).default;
+      if (isRouter(defaultExport)) {
+        this.app.use(basePath, defaultExport);
+        console.log(`✓ Registered routes: ${basePath} -> ${moduleInfo.routePath}`);
         return;
       }
 
-      // Use custom basePath or default to module name
-      const basePath = routeModule.basePath || `/api/v1/${moduleInfo.name}`;
+      if (isRouter(required.router)) {
+        this.app.use(basePath, required.router);
+        console.log(`✓ Registered routes: ${basePath} -> ${moduleInfo.routePath}`);
+        return;
+      }
 
-      this.app.use(basePath, routeModule.default);
-      console.log(`✓ Registered routes: ${basePath} -> ${moduleInfo.routePath}`);
+      console.warn(`No default export found in ${moduleInfo.routePath}`);
     } catch (error) {
       console.error(`Failed to load routes from ${moduleInfo.routePath}:`, error);
       throw error;
@@ -91,8 +129,6 @@ export class RouteLoader {
    * Get all registered routes (for debugging)
    */
   getRegisteredRoutes(): Array<{ path: string; methods: string[] }> {
-    // This method is simplified to avoid complex type checking
-    // For full route inspection, use express-list-endpoints package
     console.log('Route inspection available via express-list-endpoints package');
     return [];
   }

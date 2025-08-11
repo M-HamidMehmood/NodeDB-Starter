@@ -10,9 +10,10 @@ jest.mock('../../src/db/queries/roles');
 jest.mock('../../src/db/connection', () => ({
   db: {
     select: jest.fn().mockReturnValue({
-      from: jest.fn().mockReturnValue([{ id: 1, name: 'test_permission', description: 'Test permission' }]),
-      where: jest.fn().mockReturnValue({
-        limit: jest.fn().mockResolvedValue([{ id: 1 }]),
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockReturnValue({
+          limit: jest.fn().mockResolvedValue([{ id: 1 }]),
+        }),
       }),
     }),
   },
@@ -284,7 +285,16 @@ describe('Role Service', () => {
 
       mockRoleQueries.getRoleById.mockResolvedValue(mockRole);
 
-      // Database is already mocked at the top level
+      // Mock the database permission validation
+      // eslint-disable-next-line global-require
+      const mockDb = require('../../src/db/connection').db;
+      mockDb.select.mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ id: 1 }]),
+          }),
+        }),
+      });
 
       mockRoleQueries.assignMultiplePermissionsToRole.mockResolvedValue(undefined);
       mockRoleQueries.getRoleWithPermissions.mockResolvedValue(mockRoleWithPermissions);
@@ -390,7 +400,12 @@ describe('Role Service', () => {
     test('should get all permissions successfully', async () => {
       const mockPermissions = [mockPermission];
 
-      // Database is already mocked at the top level
+      // Mock successful database response
+      // eslint-disable-next-line global-require
+      const mockDb = require('../../src/db/connection').db;
+      mockDb.select.mockReturnValue({
+        from: jest.fn().mockResolvedValue(mockPermissions),
+      });
 
       const result = await roleService.getAllPermissionsService();
 
