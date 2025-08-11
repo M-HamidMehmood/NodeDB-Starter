@@ -26,21 +26,14 @@ app.use(fileUpload());
 
 // app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiDocument));
 
-// Auto-load routes
-const initializeRoutes = async () => {
-  try {
-    const routeLoader = new RouteLoader(app);
-    await routeLoader.loadRoutes();
-  } catch (error) {
-    logger.error('Failed to load routes:', error);
-    process.exit(1);
-  }
-};
-
-initializeRoutes().catch(err => {
-  console.error('Failed to initialize routes:', err);
+// Auto-load routes synchronously to ensure availability in tests
+try {
+  const routeLoader = new RouteLoader(app);
+  routeLoader.loadRoutesSync();
+} catch (error) {
+  logger.error('Failed to load routes:', error);
   process.exit(1);
-});
+}
 
 // 404 handler
 app.use((_req, res) => {
